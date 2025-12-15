@@ -17,8 +17,28 @@ async function bootstrap() {
   expressApp.use(express.urlencoded({ limit: '50mb', extended: true }));
 
   // Enable CORS for frontend integration
+  const allowedOrigins = [
+    'http://localhost:3000',
+    'http://localhost:3001',
+    process.env.FRONTEND_URL,
+  ].filter(Boolean);
+  
   app.enableCors({
-    origin: ['http://localhost:3000', 'http://localhost:3001'],
+    origin: (origin, callback) => {
+      // Allow requests with no origin (like mobile apps or curl requests)
+      if (!origin) return callback(null, true);
+      
+      // Check if origin is in allowed list or is a Railway domain
+      if (
+        allowedOrigins.includes(origin) ||
+        origin.includes('.railway.app') ||
+        origin.includes('.railway.tech')
+      ) {
+        callback(null, true);
+      } else {
+        callback(null, true); // Allow all origins for now, can be restricted later
+      }
+    },
     credentials: true,
   });
 

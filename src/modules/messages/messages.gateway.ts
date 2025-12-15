@@ -19,7 +19,27 @@ interface AuthenticatedSocket extends Socket {
 
 @WebSocketGateway({
   cors: {
-    origin: process.env.FRONTEND_URL || 'http://localhost:3000',
+    origin: (origin, callback) => {
+      // Allow requests with no origin
+      if (!origin) return callback(null, true);
+      
+      const allowedOrigins = [
+        'http://localhost:3000',
+        'http://localhost:3001',
+        process.env.FRONTEND_URL,
+      ].filter(Boolean);
+      
+      // Check if origin is in allowed list or is a Railway domain
+      if (
+        allowedOrigins.includes(origin) ||
+        origin.includes('.railway.app') ||
+        origin.includes('.railway.tech')
+      ) {
+        callback(null, true);
+      } else {
+        callback(null, true); // Allow all origins for now
+      }
+    },
     credentials: true,
   },
   namespace: '/messages',
