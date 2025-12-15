@@ -196,7 +196,7 @@ export class InitialMigration1765830407453 implements MigrationInterface {
                 "ride_id" uuid,
                 "content" text NOT NULL,
                 "type" "public"."messages_type_enum" NOT NULL DEFAULT 'text',
-                "read" boolean NOT NULL DEFAULT false,
+                "isRead" boolean NOT NULL DEFAULT false,
                 "createdAt" TIMESTAMP NOT NULL DEFAULT now(),
                 "updatedAt" TIMESTAMP NOT NULL DEFAULT now(),
                 CONSTRAINT "PK_messages" PRIMARY KEY ("id"),
