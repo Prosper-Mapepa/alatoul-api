@@ -35,7 +35,7 @@ export const getDatabaseConfig = (
       entities: [User, Ride, Payment, KYC, Vehicle, Message, Rating, Settings, Notification],
       synchronize: shouldSynchronize,
       logging: configService.get('NODE_ENV') === 'development',
-      migrations: ['dist/migrations/**/*.js'],
+      migrations: ['dist/src/migrations/**/*.js'],
       migrationsRun: true, // Automatically run migrations on startup
       ssl: configService.get('NODE_ENV') === 'production' ? { rejectUnauthorized: false } : false,
     };
@@ -52,8 +52,8 @@ export const getDatabaseConfig = (
     entities: [User, Ride, Payment, KYC, Vehicle, Message, Rating, Settings, Notification],
     synchronize: shouldSynchronize,
     logging: configService.get('NODE_ENV') === 'development',
-    migrations: ['dist/migrations/**/*.js'],
-    migrationsRun: false,
+      migrations: ['dist/src/migrations/**/*.js'],
+      migrationsRun: true, // Automatically run migrations on startup
     ssl: configService.get('NODE_ENV') === 'production' ? { rejectUnauthorized: false } : false,
   };
 };

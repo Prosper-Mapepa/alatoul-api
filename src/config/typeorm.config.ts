@@ -33,7 +33,7 @@ if (databaseUrl) {
     database: url.pathname.slice(1), // Remove leading '/'
     entities: [User, Ride, Payment, KYC, Vehicle, Message, Rating, Settings, Notification],
     migrations: process.env.NODE_ENV === 'production' 
-      ? ['dist/migrations/*.js'] 
+      ? ['dist/src/migrations/*.js'] 
       : ['src/migrations/*.ts'],
     synchronize: false,
     logging: configService.get('NODE_ENV') === 'development',
@@ -50,7 +50,7 @@ if (databaseUrl) {
     database: configService.get('DB_DATABASE', 'alatoul'),
     entities: [User, Ride, Payment, KYC, Vehicle, Message, Rating, Settings, Notification],
     migrations: process.env.NODE_ENV === 'production' 
-      ? ['dist/migrations/*.js'] 
+      ? ['dist/src/migrations/*.js'] 
       : ['src/migrations/*.ts'],
     synchronize: false,
     logging: configService.get('NODE_ENV') === 'development',
