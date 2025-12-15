@@ -48,6 +48,11 @@ If you see `ECONNREFUSED` errors:
 3. Verify `DATABASE_URL` is set in environment variables
 4. Check that the database service is running
 
+**If PostgreSQL keeps shutting down immediately after startup:**
+- See `RAILWAY_DATABASE_FIX.md` for detailed troubleshooting steps
+- Common fixes: Restart the PostgreSQL service, wait for full initialization (3-5 minutes), or recreate the database service
+- Check Railway logs for memory/disk space errors
+
 ### Environment Variables Checklist
 
 Required environment variables in Railway:
