@@ -31,6 +31,7 @@ Add these environment variables in Railway (Settings → Variables):
 - `NODE_ENV` - Set to `production`
 - `PORT` - Automatically set by Railway (don't override)
 - `FRONTEND_URL` - Your frontend URL (e.g., `https://your-frontend.vercel.app`)
+- `DB_SYNCHRONIZE` - Set to `true` for initial setup to auto-create tables, then set to `false` after tables are created (recommended for production safety)
 
 ### 4. Database Connection
 
@@ -72,3 +73,4 @@ After successful deployment, you can create an admin account by:
 Admin credentials (if already created):
 - Email: `admin@alatoul.com`
 - Password: `Admin@123456`
+
