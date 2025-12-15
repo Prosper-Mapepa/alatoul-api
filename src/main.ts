@@ -62,6 +62,23 @@ async function bootstrap() {
     res.status(200).json({ status: 'ok', timestamp: new Date().toISOString() });
   });
 
+  // Handle root path and favicon requests gracefully
+  expressApp.get('/', (req: any, res: any) => {
+    res.status(200).json({ 
+      message: 'Alatoul Backend API',
+      version: '1.0.0',
+      endpoints: {
+        health: '/health',
+        api: '/api',
+        docs: 'API endpoints are available under /api prefix'
+      }
+    });
+  });
+
+  expressApp.get('/favicon.ico', (req: any, res: any) => {
+    res.status(204).send(); // No content
+  });
+
   const port = process.env.PORT || 3001;
   await app.listen(port);
   console.log(`🚀 Alatoul Backend API is running on: http://localhost:${port}/api`);
