@@ -1,0 +1,16 @@
+[phases.setup]
+nixPkgs = ["nodejs-18.x", "npm"]
+
+[phases.install]
+cmds = [
+  "npm cache clean --force || true",
+  "npm install --legacy-peer-deps --no-audit"
+]
+
+[phases.build]
+cmds = [
+  "npm run build"
+]
+
+[start]
+cmd = "node dist/src/main.js"
