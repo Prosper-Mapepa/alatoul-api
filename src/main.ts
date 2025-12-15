@@ -57,9 +57,15 @@ async function bootstrap() {
   // Global prefix for all routes
   app.setGlobalPrefix('api');
 
+  // Health check endpoint (without /api prefix for Railway/monitoring)
+  expressApp.get('/health', (req: any, res: any) => {
+    res.status(200).json({ status: 'ok', timestamp: new Date().toISOString() });
+  });
+
   const port = process.env.PORT || 3001;
   await app.listen(port);
   console.log(`🚀 Alatoul Backend API is running on: http://localhost:${port}/api`);
+  console.log(`📊 Health check available at: http://localhost:${port}/health`);
 }
 bootstrap();
 
