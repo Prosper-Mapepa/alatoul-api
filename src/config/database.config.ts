@@ -36,7 +36,7 @@ export const getDatabaseConfig = (
       synchronize: shouldSynchronize,
       logging: configService.get('NODE_ENV') === 'development',
       migrations: ['dist/migrations/**/*.js'],
-      migrationsRun: false,
+      migrationsRun: true, // Automatically run migrations on startup
       ssl: configService.get('NODE_ENV') === 'production' ? { rejectUnauthorized: false } : false,
     };
   }

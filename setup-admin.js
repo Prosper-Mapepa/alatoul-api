@@ -56,3 +56,4 @@ try {
   console.log('   3. Dependencies are installed (npm install)');
   process.exit(1);
 }
+
