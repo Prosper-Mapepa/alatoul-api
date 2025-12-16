@@ -59,7 +59,27 @@ export class KYCService {
       return this.create(userId, kycData);
     }
     
-    Object.assign(kyc, kycData);
+    // Only assign valid fields to avoid database errors
+    const validFields = [
+      'firstName', 'lastName', 'dateOfBirth', 'nationality',
+      'address', 'city', 'state', 'zipCode', 'country',
+      'idType', 'idNumber', 'idFrontImage', 'idBackImage', 'idExpiryDate',
+      'licenseNumber', 'licenseImage', 'licenseExpiryDate', 'licenseIssuedDate',
+      'vehicleMake', 'vehicleModel', 'vehicleYear', 'vehiclePlateNumber', 'vehicleRegistrationImage',
+      'bankName', 'accountNumber', 'accountHolderName',
+      'mobileMoneyNumber', 'mobileMoneyProvider',
+      'rejectionReason'
+    ];
+    
+    // Filter and assign only valid fields
+    const filteredData: any = {};
+    for (const field of validFields) {
+      if (kycData[field] !== undefined) {
+        filteredData[field] = kycData[field];
+      }
+    }
+    
+    Object.assign(kyc, filteredData);
     return this.kycRepository.save(kyc);
   }
 
