@@ -7,21 +7,34 @@ export class InitialMigration1765830407453 implements MigrationInterface {
         // Create UUID extension
         await queryRunner.query(`CREATE EXTENSION IF NOT EXISTS "uuid-ossp"`);
 
-        // Create enums
-        await queryRunner.query(`CREATE TYPE "public"."users_role_enum" AS ENUM('passenger', 'driver', 'admin')`);
-        await queryRunner.query(`CREATE TYPE "public"."users_status_enum" AS ENUM('pending', 'active', 'suspended', 'verified')`);
-        await queryRunner.query(`CREATE TYPE "public"."payments_method_enum" AS ENUM('cash', 'card', 'wallet', 'mobile_money')`);
-        await queryRunner.query(`CREATE TYPE "public"."payments_status_enum" AS ENUM('pending', 'processing', 'completed', 'failed', 'refunded')`);
-        await queryRunner.query(`CREATE TYPE "public"."rides_type_enum" AS ENUM('now', 'scheduled')`);
-        await queryRunner.query(`CREATE TYPE "public"."rides_status_enum" AS ENUM('pending', 'accepted', 'driver_assigned', 'driver_arrived', 'in_progress', 'completed', 'cancelled')`);
-        await queryRunner.query(`CREATE TYPE "public"."kyc_status_enum" AS ENUM('pending', 'in_progress', 'approved', 'rejected')`);
-        await queryRunner.query(`CREATE TYPE "public"."messages_type_enum" AS ENUM('text', 'image', 'system')`);
-        await queryRunner.query(`CREATE TYPE "public"."vehicles_type_enum" AS ENUM('sedan', 'suv', 'van', 'motorcycle')`);
-        await queryRunner.query(`CREATE TYPE "public"."notifications_type_enum" AS ENUM('ride_request', 'ride_accepted', 'ride_cancelled', 'ride_completed', 'payment_received', 'kyc_approved', 'kyc_rejected', 'driver_approved', 'driver_suspended', 'system_alert', 'safety_report')`);
+        // Helper function to create enum if it doesn't exist
+        const createEnumIfNotExists = async (enumName: string, enumValues: string[]) => {
+            const enumExists = await queryRunner.query(`
+                SELECT EXISTS (
+                    SELECT 1 FROM pg_type WHERE typname = '${enumName}'
+                )
+            `);
+            
+            if (!enumExists[0].exists) {
+                await queryRunner.query(`CREATE TYPE "public"."${enumName}" AS ENUM(${enumValues.map(v => `'${v}'`).join(', ')})`);
+            }
+        };
+
+        // Create enums (only if they don't exist)
+        await createEnumIfNotExists('users_role_enum', ['passenger', 'driver', 'admin']);
+        await createEnumIfNotExists('users_status_enum', ['pending', 'active', 'suspended', 'verified']);
+        await createEnumIfNotExists('payments_method_enum', ['cash', 'card', 'wallet', 'mobile_money']);
+        await createEnumIfNotExists('payments_status_enum', ['pending', 'processing', 'completed', 'failed', 'refunded']);
+        await createEnumIfNotExists('rides_type_enum', ['now', 'scheduled']);
+        await createEnumIfNotExists('rides_status_enum', ['pending', 'accepted', 'driver_assigned', 'driver_arrived', 'in_progress', 'completed', 'cancelled']);
+        await createEnumIfNotExists('kyc_status_enum', ['pending', 'in_progress', 'approved', 'rejected']);
+        await createEnumIfNotExists('messages_type_enum', ['text', 'image', 'system']);
+        await createEnumIfNotExists('vehicles_type_enum', ['sedan', 'suv', 'van', 'motorcycle']);
+        await createEnumIfNotExists('notifications_type_enum', ['ride_request', 'ride_accepted', 'ride_cancelled', 'ride_completed', 'payment_received', 'kyc_approved', 'kyc_rejected', 'driver_approved', 'driver_suspended', 'system_alert', 'safety_report']);
 
         // Create users table
         await queryRunner.query(`
-            CREATE TABLE "users" (
+            CREATE TABLE IF NOT EXISTS "users" (
                 "id" uuid NOT NULL DEFAULT uuid_generate_v4(),
                 "email" character varying NOT NULL,
                 "password" character varying NOT NULL,
@@ -45,11 +58,11 @@ export class InitialMigration1765830407453 implements MigrationInterface {
                 CONSTRAINT "PK_users" PRIMARY KEY ("id")
             )
         `);
-        await queryRunner.query(`CREATE INDEX "IDX_users_email" ON "users" ("email")`);
+        await queryRunner.query(`CREATE INDEX IF NOT EXISTS "IDX_users_email" ON "users" ("email")`);
 
         // Create vehicles table
         await queryRunner.query(`
-            CREATE TABLE "vehicles" (
+            CREATE TABLE IF NOT EXISTS "vehicles" (
                 "id" uuid NOT NULL DEFAULT uuid_generate_v4(),
                 "driver_id" uuid NOT NULL,
                 "make" character varying NOT NULL,
@@ -64,11 +77,11 @@ export class InitialMigration1765830407453 implements MigrationInterface {
                 CONSTRAINT "FK_vehicles_driver" FOREIGN KEY ("driver_id") REFERENCES "users"("id") ON DELETE CASCADE
             )
         `);
-        await queryRunner.query(`CREATE INDEX "IDX_vehicles_driver" ON "vehicles" ("driver_id")`);
+        await queryRunner.query(`CREATE INDEX IF NOT EXISTS "IDX_vehicles_driver" ON "vehicles" ("driver_id")`);
 
         // Create kyc table
         await queryRunner.query(`
-            CREATE TABLE "kyc" (
+            CREATE TABLE IF NOT EXISTS "kyc" (
                 "id" uuid NOT NULL DEFAULT uuid_generate_v4(),
                 "user_id" uuid NOT NULL,
                 "status" "public"."kyc_status_enum" NOT NULL DEFAULT 'pending',
@@ -111,7 +124,7 @@ export class InitialMigration1765830407453 implements MigrationInterface {
 
         // Create rides table
         await queryRunner.query(`
-            CREATE TABLE "rides" (
+            CREATE TABLE IF NOT EXISTS "rides" (
                 "id" uuid NOT NULL DEFAULT uuid_generate_v4(),
                 "passenger_id" uuid NOT NULL,
                 "driver_id" uuid,
@@ -142,13 +155,13 @@ export class InitialMigration1765830407453 implements MigrationInterface {
                 CONSTRAINT "FK_rides_driver" FOREIGN KEY ("driver_id") REFERENCES "users"("id")
             )
         `);
-        await queryRunner.query(`CREATE INDEX "IDX_rides_passenger" ON "rides" ("passenger_id")`);
-        await queryRunner.query(`CREATE INDEX "IDX_rides_driver" ON "rides" ("driver_id")`);
-        await queryRunner.query(`CREATE INDEX "IDX_rides_status" ON "rides" ("status")`);
+        await queryRunner.query(`CREATE INDEX IF NOT EXISTS "IDX_rides_passenger" ON "rides" ("passenger_id")`);
+        await queryRunner.query(`CREATE INDEX IF NOT EXISTS "IDX_rides_driver" ON "rides" ("driver_id")`);
+        await queryRunner.query(`CREATE INDEX IF NOT EXISTS "IDX_rides_status" ON "rides" ("status")`);
 
         // Create payments table
         await queryRunner.query(`
-            CREATE TABLE "payments" (
+            CREATE TABLE IF NOT EXISTS "payments" (
                 "id" uuid NOT NULL DEFAULT uuid_generate_v4(),
                 "user_id" uuid NOT NULL,
                 "ride_id" uuid,
@@ -164,12 +177,12 @@ export class InitialMigration1765830407453 implements MigrationInterface {
                 CONSTRAINT "FK_payments_ride" FOREIGN KEY ("ride_id") REFERENCES "rides"("id")
             )
         `);
-        await queryRunner.query(`CREATE INDEX "IDX_payments_user" ON "payments" ("user_id")`);
-        await queryRunner.query(`CREATE INDEX "IDX_payments_status" ON "payments" ("status")`);
+        await queryRunner.query(`CREATE INDEX IF NOT EXISTS "IDX_payments_user" ON "payments" ("user_id")`);
+        await queryRunner.query(`CREATE INDEX IF NOT EXISTS "IDX_payments_status" ON "payments" ("status")`);
 
         // Create ratings table
         await queryRunner.query(`
-            CREATE TABLE "ratings" (
+            CREATE TABLE IF NOT EXISTS "ratings" (
                 "id" uuid NOT NULL DEFAULT uuid_generate_v4(),
                 "user_id" uuid NOT NULL,
                 "rated_by_id" uuid NOT NULL,
@@ -184,12 +197,12 @@ export class InitialMigration1765830407453 implements MigrationInterface {
                 CONSTRAINT "FK_ratings_ride" FOREIGN KEY ("ride_id") REFERENCES "rides"("id")
             )
         `);
-        await queryRunner.query(`CREATE INDEX "IDX_ratings_user" ON "ratings" ("user_id")`);
-        await queryRunner.query(`CREATE INDEX "IDX_ratings_ride" ON "ratings" ("ride_id")`);
+        await queryRunner.query(`CREATE INDEX IF NOT EXISTS "IDX_ratings_user" ON "ratings" ("user_id")`);
+        await queryRunner.query(`CREATE INDEX IF NOT EXISTS "IDX_ratings_ride" ON "ratings" ("ride_id")`);
 
         // Create messages table
         await queryRunner.query(`
-            CREATE TABLE "messages" (
+            CREATE TABLE IF NOT EXISTS "messages" (
                 "id" uuid NOT NULL DEFAULT uuid_generate_v4(),
                 "sender_id" uuid NOT NULL,
                 "receiver_id" uuid NOT NULL,
@@ -206,11 +219,11 @@ export class InitialMigration1765830407453 implements MigrationInterface {
                 CONSTRAINT "FK_messages_ride" FOREIGN KEY ("ride_id") REFERENCES "rides"("id") ON DELETE CASCADE
             )
         `);
-        await queryRunner.query(`CREATE INDEX "IDX_messages_ride" ON "messages" ("ride_id")`);
+        await queryRunner.query(`CREATE INDEX IF NOT EXISTS "IDX_messages_ride" ON "messages" ("ride_id")`);
 
         // Create notifications table
         await queryRunner.query(`
-            CREATE TABLE "notifications" (
+            CREATE TABLE IF NOT EXISTS "notifications" (
                 "id" uuid NOT NULL DEFAULT uuid_generate_v4(),
                 "user_id" uuid NOT NULL,
                 "type" "public"."notifications_type_enum" NOT NULL,
@@ -226,11 +239,11 @@ export class InitialMigration1765830407453 implements MigrationInterface {
                 CONSTRAINT "FK_notifications_user" FOREIGN KEY ("user_id") REFERENCES "users"("id") ON DELETE CASCADE
             )
         `);
-        await queryRunner.query(`CREATE INDEX "IDX_notifications_user" ON "notifications" ("user_id")`);
+        await queryRunner.query(`CREATE INDEX IF NOT EXISTS "IDX_notifications_user" ON "notifications" ("user_id")`);
 
         // Create settings table
         await queryRunner.query(`
-            CREATE TABLE "settings" (
+            CREATE TABLE IF NOT EXISTS "settings" (
                 "id" uuid NOT NULL DEFAULT uuid_generate_v4(),
                 "key" character varying NOT NULL DEFAULT 'default',
                 "platformFeePercent" numeric(5,2) NOT NULL DEFAULT 20,
