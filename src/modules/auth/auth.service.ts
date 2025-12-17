@@ -39,14 +39,14 @@ export class AuthService {
     // Hash password
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    // Create user
+    // Create user - Auto-verify for demonstration
     const user = this.userRepository.create({
       email,
       password: hashedPassword,
       name,
       phone,
       role,
-      status: AccountStatus.PENDING,
+      status: AccountStatus.ACTIVE, // Auto-verify for demonstration
     });
 
     const savedUser = await this.userRepository.save(user);

@@ -27,7 +27,7 @@ export class UsersService {
 
     const user = this.userRepository.create({
       ...createUserDto,
-      status: AccountStatus.PENDING,
+      status: AccountStatus.ACTIVE, // Auto-verify for demonstration
     });
 
     return this.userRepository.save(user);

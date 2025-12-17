@@ -35,10 +35,18 @@ export class KYCService {
       ...kycData,
       user,
       userId,
-      status: KYCStatus.PENDING,
+      status: KYCStatus.APPROVED, // Auto-approve for demonstration
     });
 
-    return this.kycRepository.save(kyc);
+    const savedKYC = await this.kycRepository.save(kyc);
+    
+    // Auto-approve user status for demonstration
+    if (user) {
+      user.status = AccountStatus.ACTIVE;
+      await this.userRepository.save(user);
+    }
+
+    return savedKYC;
   }
 
   async findOne(userId: string): Promise<KYC | null> {
@@ -80,6 +88,19 @@ export class KYCService {
     }
     
     Object.assign(kyc, filteredData);
+    
+    // Auto-approve KYC for demonstration if it has required fields
+    if (kyc.status === KYCStatus.PENDING && kycData.firstName && kycData.lastName) {
+      kyc.status = KYCStatus.APPROVED;
+      
+      // Auto-approve user status for demonstration
+      const user = await this.userRepository.findOne({ where: { id: userId } });
+      if (user) {
+        user.status = AccountStatus.ACTIVE;
+        await this.userRepository.save(user);
+      }
+    }
+    
     return this.kycRepository.save(kyc);
   }
 
